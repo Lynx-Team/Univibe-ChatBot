@@ -3,9 +3,9 @@ import requests
 import time
 import urllib
 
-#"416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
-#"495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
-TOKEN = "416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
+#Prod - "416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
+#Test - "495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
+TOKEN = "495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
 def getUrl(url):
@@ -31,11 +31,16 @@ def getLastUpdateId(updates):
         update_ids.append(int(update["update_id"]))
     return max(update_ids)
 
-def createAnswer(updates):
+def createAnswerTest(updates):
     for update in updates["result"]:
         text = update["message"]["text"]
         chat = update["message"]["chat"]["id"]
         sendMessage(text, chat)
+
+def createAnswer(updates):
+    text = updates["message"]["text"]
+    chat = updates["message"]["chat"]["id"]
+    sendMessage(text, chat)
 
 def sendMessage(text, chat_id):
     text = urllib.parse.quote_plus(text)
@@ -49,9 +54,9 @@ def main():
         updates = getUpdates(last_update_id)
         if len(updates["result"]) > 0:
             last_update_id = getLastUpdateId(updates) + 1
-            createAnswer(updates)
+            createAnswerTest(updates)
         time.sleep(0.5)
 
 
-#if __name__ == '__main__':
-#    main()
+if __name__ == '__main__':
+    main()
