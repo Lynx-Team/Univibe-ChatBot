@@ -8,7 +8,9 @@ app = Flask(__name__)
 @app.route("/", methods=["POST", "GET"])
 def handel():
         update = request.data.decode("utf-8")
+        print(update)
         update = json.loads(update)
+        print("2",update)
         createAnswer(update)
         print(request.data)
         return "KEK"

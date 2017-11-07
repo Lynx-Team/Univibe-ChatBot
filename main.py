@@ -3,6 +3,8 @@ import requests
 import time
 import urllib
 
+#"416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
+#"495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
 TOKEN = "416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
@@ -10,7 +12,6 @@ def getUrl(url):
     response = requests.get(url)
     content = response.content.decode("utf8")
     return content
-
 
 def getJson(url):
     content = getUrl(url)
@@ -52,5 +53,5 @@ def main():
         time.sleep(0.5)
 
 
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+#    main()
