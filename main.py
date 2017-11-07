@@ -6,7 +6,6 @@ import urllib
 TOKEN = "416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
-
 def getUrl(url):
     response = requests.get(url)
     content = response.content.decode("utf8")
@@ -18,14 +17,12 @@ def getJson(url):
     js = json.loads(content)
     return js
 
-
 def getUpdates(offset=None):
     url = URL + "getUpdates"
     if offset:
         url += "?offset={}".format(offset)
     js = getJson(url)
     return js
-
 
 def getLastUpdateId(updates):
     update_ids = []
