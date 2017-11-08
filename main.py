@@ -4,7 +4,10 @@ import time
 import re
 from enum import Enum
 import urllib
-import random
+
+from additionalCommand import unknownMessage, hiMessage, helpMessage
+from subCommand import subMessage
+from sendCommand import sendMessage
 
 import pyodbc
 
@@ -35,57 +38,28 @@ class Command(Enum):
     SUBOUT = 10
     UNKNOWN = 11
 
-HiMEssages = ["И тебе привет", "Привет, чем могу помочь?", "Здравствуй"]
 
-def hiMessage():
-    return HiMEssages[random.randint(0,len(HiMEssages) - 1)]
-
-def teacherFreeMessage(userName, userMessage):
-    return "@" + userName + ":\n" + userMessage
-
-def subMessage(userName):
-    return "Вы подписались на " + userName
-
-
-def helpMessage():
-    return "/sub - Подписаться на рассылку пользователя \n /send \"Сообщение\" -  Отправить сообщение своим подписчикам"
-
-
-def unknownMessage():
-    return "Прости, я тебя не понял. Попробуй ввести команду точнее или узнай что я могу с помощью команды /help"
-
-
-answerTable = {Command.HI: hiMessage(), Command.UNKNOWN: unknownMessage(), Command.HELP: helpMessage(),
-               Command.SUB: subMessage, Command.SEND: teacherFreeMessage}
+answerTable = { Command.HI: hiMessage(), Command.UNKNOWN: unknownMessage(), Command.HELP: helpMessage(),
+                    Command.SUB: subMessage, Command.SEND: sendMessage }
 
 
 def handleMessage(text, userName):
-    if (re.match(r'.*п.*вет', text, flags=(re.IGNORECASE | re.MULTILINE))):
-        return answerTable[Command.HI]
 
+    if (re.match(r'(.*п.*вет|ку|hi|хай|здра.*те)', text, flags=(re.IGNORECASE | re.MULTILINE))):
+        return answerTable[Command.HI]
     elif (re.match(r'^\s*(/help|help)\s*$', text)):
         return answerTable[Command.HELP]
-
     elif (re.match(r'^\s*(/sub|sub)', text)):
-        userText = re.findall(r'sub\s*(.*)\s*$', text)
-        if(userName[0] == ""):
-            return "Вы должны ввести логин пользователя после команды sub"
-        return answerTable[Command.SUB](userText[0])
-
-    elif (re.match(r'^\s*send|/send.*$', text)):
-        userText = re.findall(r'.*send\s+(.*)$', text)
-        if (userText[0] == ""):
-            return "Вы должны ввести сообщние после команды send"
-        return answerTable[Command.SEND](userName, userText[0])
+        return answerTable[Command.SUB](text)
+    elif (re.match(r'^\s*(send|/send).*$', text)):
+        return answerTable[Command.SEND](userName, text)
     else:
         return answerTable[Command.UNKNOWN]
-
 
 def createAnswer(updates):
     answerText = handleMessage(updates["message"]["text"])
     chat = updates["message"]["chat"]["id"]
     sendMessage(answerText, chat)
-
 
 def sendMessage(text, chat_id):
     text = urllib.parse.quote_plus(text)
@@ -127,6 +101,7 @@ def getLastUpdateId(updates):
     for update in updates["result"]:
         update_ids.append(int(update["update_id"]))
     return max(update_ids)
+
 
 
 def newUser(result):
