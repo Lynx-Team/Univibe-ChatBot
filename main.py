@@ -2,6 +2,7 @@ import json
 import requests
 import time
 import re
+import copy
 from enum import Enum
 import urllib
 
@@ -24,7 +25,7 @@ WHATLESSON = "Какая у меня пара?"
 PROFILE = "Профиль"
 SEND = "Отправить сообщение"
 
-CHANGEMOD = "Изменить режить"
+CHANGEMOD = "Изменить режим"
 MYSP = "Мои подписки"
 MYSPS = "Мои подписчики"
 BACK = "Назад"
@@ -36,6 +37,7 @@ TSTUDENT = "Расписание Cтудента"
 
 def whatLesson():
     return "Алгебра"
+
 
 import telebot
 from telebot import types
@@ -52,13 +54,21 @@ def callback_inline(call):
 @bot.message_handler(commands=["start"])
 def mainMenu(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    global pervKeyBoard
+    global currentKeyBoard
+
     keyboard.add(types.KeyboardButton(text=WHATLESSON))
     keyboard.row_width = 2
     keyboard.add(types.KeyboardButton(text=PROFILE), types.KeyboardButton(text=SEND))
-    #bot.send_message(message.chat.id, "Я – сообщение из обычного режима", reply_markup=keyboard)
+    currentKeyBoard = keyboard
+    pervKeyBoard = keyboard
+
+    bot.send_message(message.chat.id, "Возможные действия:",reply_markup=keyboard)
 
 @bot.message_handler(regexp=PROFILE)
 def profile(message):
+    global pervKeyBoard
+    global currentKeyBoard
     print(message)
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     keyboard.add(types.KeyboardButton(text=CHANGEMOD))
@@ -66,6 +76,40 @@ def profile(message):
     keyboard.add(types.KeyboardButton(text=MYSP), types.KeyboardButton(text=MYSPS))
     keyboard.row_width = 1
     keyboard.add(types.KeyboardButton(text=BACK))
+
+    pervKeyBoard = currentKeyBoard
+    currentKeyBoard = keyboard
+
+    bot.send_message(message.chat.id, "Возможные действия:", reply_markup=keyboard)
+
+@bot.message_handler(regexp=SEND)
+def profile(message):
+    bot.send_message(message.chat.id, "Введите сообщение для рассылки")
+
+@bot.message_handler(regexp=CHANGEMOD)
+def profile(message):
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    keyboard.add(types.KeyboardButton(text=TTABLE), types.KeyboardButton(text=TSTUDENT))
+    bot.send_message(message.chat.id, "Выбирите режим просмотра расписания", reply_markup=keyboard)
+
+@bot.message_handler(regexp=MYSP)
+def profile(message):
+    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    keyboard.add(types.KeyboardButton(text=SUB),keyboard.add(types.KeyboardButton(text=BACK)))
+    bot.send_message(message.chat.id, "Возможные функции:", reply_markup=keyboard)
+
+@bot.message_handler(regexp=SUB)
+def profile(message):
+    bot.send_message(message.chat.id, "Введите логин пользователя")
+
+@bot.message_handler(regexp=BACK)
+def profile(message):
+    global pervKeyBoard
+    global currentKeyBoard
+    bot.send_message(message.chat.id, "Назад", reply_markup=pervKeyBoard)
+    pervKeyBoard = currentKeyBoard
+    currentKeyBoard = pervKeyBoard
+
 
 
 # @bot.message_handler(content_types=["text"])
