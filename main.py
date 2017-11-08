@@ -19,20 +19,20 @@ TOKEN = "495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
 
-class Command(Enum):
-    WHATLESSON = "Какая у меня пара?"
-    PROFILE = "Профиль"
-    SEND = "Отправить сообщение"
 
-    CHANGEMOD = "Изменить режить"
-    MYSP = "Мои подписки"
-    MYSPS = "Мои подписчики"
-    BACK = "Назад"
+WHATLESSON = "Какая у меня пара?"
+PROFILE = "Профиль"
+SEND = "Отправить сообщение"
 
-    SUB = "Подписаться"
+CHANGEMOD = "Изменить режить"
+MYSP = "Мои подписки"
+MYSPS = "Мои подписчики"
+BACK = "Назад"
 
-    TTABLE = "Расписание преподавателя"
-    TSTUDENT = "Расписание Cтудента"
+SUB = "Подписаться"
+
+TTABLE = "Расписание преподавателя"
+TSTUDENT = "Расписание Cтудента"
 
 def whatLesson():
     return "Алгебра"
@@ -52,18 +52,20 @@ def callback_inline(call):
 @bot.message_handler(commands=["start"])
 def mainMenu(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    keyboard.add(types.KeyboardButton(text=Command.WHATLESSON))
+    keyboard.add(types.KeyboardButton(text=WHATLESSON))
     keyboard.row_width = 2
-    keyboard.add(types.KeyboardButton(text=Command.PROFILE), types.KeyboardButton(text=Command.SEND))
+    keyboard.add(types.KeyboardButton(text=PROFILE), types.KeyboardButton(text=SEND))
+    #bot.send_message(message.chat.id, "Я – сообщение из обычного режима", reply_markup=keyboard)
 
-@bot.message_handler(commands=["sub"])
+@bot.message_handler(regexp=PROFILE)
 def profile(message):
+    print(message)
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    keyboard.add(types.KeyboardButton(text=Command.CHANGEMOD))
+    keyboard.add(types.KeyboardButton(text=CHANGEMOD))
     keyboard.row_width = 2
-    keyboard.add(types.KeyboardButton(text=Command.MYSP), types.KeyboardButton(text=Command.MYSPS))
+    keyboard.add(types.KeyboardButton(text=MYSP), types.KeyboardButton(text=MYSPS))
     keyboard.row_width = 1
-    keyboard.add(types.KeyboardButton(text=Command.BACK))
+    keyboard.add(types.KeyboardButton(text=BACK))
 
 
 # @bot.message_handler(content_types=["text"])
