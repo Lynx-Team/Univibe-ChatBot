@@ -4,6 +4,7 @@ import time
 import re
 from enum import Enum
 import urllib
+import random
 
 import pyodbc
 
@@ -25,24 +26,29 @@ class Command(Enum):
     HI = 1
     HELP = 2
     SUB = 3
-    FREE = 4
-    UNKNOWN = 5
+    SEND = 4
+    DEFINE = 5
+    START = 6
+    MYSUBS = 7
+    MYNOT = 8
+    KICK = 9
+    SUBOUT = 10
+    UNKNOWN = 11
 
+HiMEssages = ["И тебе привет", "Привет, чем могу помочь?", "Здравствуй"]
 
 def hiMessage():
-    return "И тебе привет"
+    return HiMEssages[random.randint(0,len(HiMEssages) - 1)]
 
-
-def teacherFreeMessage(userName):
-    return "Преподователь " + userName + " готов вас принять"
-
+def teacherFreeMessage(userName, userMessage):
+    return "@" + userName + ":\n" + userMessage
 
 def subMessage(userName):
     return "Вы подписались на " + userName
 
 
 def helpMessage():
-    return "/sub - подписаться на преподавателя \n /free - сказать о том что вы готовы принять"
+    return "/sub - Подписаться на рассылку пользователя \n /send \"Сообщение\" -  Отправить сообщение своим подписчикам"
 
 
 def unknownMessage():
@@ -50,19 +56,27 @@ def unknownMessage():
 
 
 answerTable = {Command.HI: hiMessage(), Command.UNKNOWN: unknownMessage(), Command.HELP: helpMessage(),
-               Command.SUB: subMessage, Command.FREE: teacherFreeMessage}
+               Command.SUB: subMessage, Command.SEND: teacherFreeMessage}
 
 
-def handleMessage(text):
-    if (re.match(r'.*П.*вет', text)):
+def handleMessage(text, userName):
+    if (re.match(r'.*п.*вет', text, flags=(re.IGNORECASE | re.MULTILINE))):
         return answerTable[Command.HI]
+
     elif (re.match(r'^\s*(/help|help)\s*$', text)):
         return answerTable[Command.HELP]
+
     elif (re.match(r'^\s*(/sub|sub)', text)):
-        userName = re.findall(r'sub\s*(.*)\s*$', text)
-        return answerTable[Command.SUB](userName[0])
-    elif (re.match(r'^\s*free|/free\s*$', text)):
-        return answerTable[Command.FREE]("Какой-то")
+        userText = re.findall(r'sub\s*(.*)\s*$', text)
+        if(userName[0] == ""):
+            return "Вы должны ввести логин пользователя после команды sub"
+        return answerTable[Command.SUB](userText[0])
+
+    elif (re.match(r'^\s*send|/send.*$', text)):
+        userText = re.findall(r'.*send\s+(.*)$', text)
+        if (userText[0] == ""):
+            return "Вы должны ввести сообщние после команды send"
+        return answerTable[Command.SEND](userName, userText[0])
     else:
         return answerTable[Command.UNKNOWN]
 
@@ -103,7 +117,7 @@ def getUpdates(offset=None):
 
 def createAnswerTest(updates):
     for update in updates["result"]:
-        text = handleMessage(update["message"]["text"])
+        text = handleMessage(update["message"]["text"], update["message"]["chat"]["username"])
         chat = update["message"]["chat"]["id"]
         sendMessage(text, chat)
 
@@ -115,46 +129,48 @@ def getLastUpdateId(updates):
     return max(update_ids)
 
 
-# def newUser(result):
-#     if (len(result) == 0):
-#         return
-#
-#     result = result[0]
-#     print(result)
-#
-#     first_name = result['message']['chat']['first_name']
-#     chat_id = result['message']['chat']['id']
-#
-#     print(first_name, chat_id)
-#
-#     cursor = cnxn.cursor()
-#     cursor.execute("SELECT * FROM dusers where dusers.user_login = N'" + first_name + "'")
-#
-#     if (not cursor.fetchone()):
-#         cursor.execute(
-#             "INSERT INTO dusers(user_login, user_password, last_news_id) values ('" + first_name + "', 'password', null)")
-#         cursor.commit()
-#
-#     print(result)
+def newUser(result):
+    if (len(result) == 0):
+        return
+
+    result = result[0]
+    print(result)
+
+    first_name = result['message']['chat']['first_name']
+    chat_id = result['message']['chat']['id']
+
+    print(first_name, chat_id)
+
+    cursor = cnxn.cursor()
+    cursor.execute("SELECT * FROM teachers")
+    #where dusers.user_login = N '" + first_name + "'")
+
+
+    if (not cursor.fetchone()):
+        cursor.execute(
+            "INSERT INTO dusers(user_login, user_password, last_news_id) values ('" + first_name + "', 'password', null)")
+        cursor.commit()
+
+    print(result)
 
 
 def main():
     last_update_id = None
     # cursor = cnxn.cursor()
-    # cursor.execute("Delete FROM dusers where dusers.id > 0")
+    # cursor.execute("SELECT * FROM teachers")
     # cursor.commit()
-    # return
+    #return
 
-    # cursor = cnxn.cursor()
-    # cursor.execute("SELECT * FROM dusers")
+    cursor = cnxn.cursor()
+    cursor.execute("SELECT * FROM teachers")
 
-    # row = cursor.fetchone()
-    # while row:
-    #     print (str(row))
-    #     row = cursor.fetchone()
+    row = cursor.fetchone()
+    while row:
+        print (str(row))
+        row = cursor.fetchone()
 
-    # return
-    print("kek")
+    #return
+
     while True:
         updates = getUpdates(last_update_id)
 
