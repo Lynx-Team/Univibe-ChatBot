@@ -4,6 +4,7 @@ import time
 import re
 from enum import Enum
 import urllib
+
 import pyodbc
 
 # Prod - "416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
@@ -15,9 +16,9 @@ server = 'univibe.database.windows.net'
 database = 'UnivibeDB'
 username = 'univibe'
 password = 'Slasten32'
-driver = '{SQL Server}'
+driver = '{ODBC Driver 13 for SQL Server}'
 cnxn = pyodbc.connect(
-    'DRIVER=' + driver + ';PORT=1433;SERVER=' + server + ';PORT=1443;DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+    'DRIVER=' + driver + ';SERVER=' + server + ';PORT=1443;DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
 
 
 class Command(Enum):
@@ -114,27 +115,27 @@ def getLastUpdateId(updates):
     return max(update_ids)
 
 
-def newUser(result):
-    if (len(result) == 0):
-        return
-
-    result = result[0]
-    print(result)
-
-    first_name = result['message']['chat']['first_name']
-    chat_id = result['message']['chat']['id']
-
-    print(first_name, chat_id)
-
-    cursor = cnxn.cursor()
-    cursor.execute("SELECT * FROM dusers where dusers.user_login = N'" + first_name + "'")
-
-    if (not cursor.fetchone()):
-        cursor.execute(
-            "INSERT INTO dusers(user_login, user_password, last_news_id) values ('" + first_name + "', 'password', null)")
-        cursor.commit()
-
-    print(result)
+# def newUser(result):
+#     if (len(result) == 0):
+#         return
+#
+#     result = result[0]
+#     print(result)
+#
+#     first_name = result['message']['chat']['first_name']
+#     chat_id = result['message']['chat']['id']
+#
+#     print(first_name, chat_id)
+#
+#     cursor = cnxn.cursor()
+#     cursor.execute("SELECT * FROM dusers where dusers.user_login = N'" + first_name + "'")
+#
+#     if (not cursor.fetchone()):
+#         cursor.execute(
+#             "INSERT INTO dusers(user_login, user_password, last_news_id) values ('" + first_name + "', 'password', null)")
+#         cursor.commit()
+#
+#     print(result)
 
 
 def main():
@@ -153,14 +154,17 @@ def main():
     #     row = cursor.fetchone()
 
     # return
-
+    print("kek")
     while True:
         updates = getUpdates(last_update_id)
 
         result = updates['result']
-        newUser(result)
+        #newUser(result)
 
         if len(result) > 0:
             last_update_id = getLastUpdateId(updates) + 1
             createAnswerTest(updates)
         time.sleep(0)
+
+if __name__ == '__main__':
+    main()
