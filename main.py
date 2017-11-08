@@ -5,6 +5,8 @@ import re
 import copy
 from enum import Enum
 import urllib
+import telebot
+from telebot import types
 
 from additionalCommand import unknownMessage, hiMessage, helpMessage
 from subCommand import subMessage
@@ -16,10 +18,8 @@ from dbconfig import cnxn
 
 # Prod - "416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
 # Test - "495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
-TOKEN = "495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
+TOKEN = "453267913:AAHqhlRIoOjG74uM0ugXZjRXtD8lSQmJbhA"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
-
-
 
 WHATLESSON = "Какая у меня пара?"
 PROFILE = "Профиль"
@@ -38,10 +38,7 @@ TSTUDENT = "Расписание Cтудента"
 def whatLesson():
     return "Алгебра"
 
-
-import telebot
-from telebot import types
-bot = telebot.TeleBot("495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM")
+bot = telebot.TeleBot(TOKEN)
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
@@ -53,6 +50,8 @@ def callback_inline(call):
 
 @bot.message_handler(commands=["start"])
 def mainMenu(message):
+    startMessage(message.chat.id)
+
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     global pervKeyBoard
     global currentKeyBoard
@@ -95,7 +94,7 @@ def profile(message):
 @bot.message_handler(regexp=MYSP)
 def profile(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    keyboard.add(types.KeyboardButton(text=SUB),keyboard.add(types.KeyboardButton(text=BACK)))
+    keyboard.add(types.KeyboardButton(text=SUB), types.KeyboardButton(text=BACK))
     bot.send_message(message.chat.id, "Возможные функции:", reply_markup=keyboard)
 
 @bot.message_handler(regexp=SUB)
@@ -109,17 +108,6 @@ def profile(message):
     bot.send_message(message.chat.id, "Назад", reply_markup=pervKeyBoard)
     pervKeyBoard = currentKeyBoard
     currentKeyBoard = pervKeyBoard
-
-
-
-# @bot.message_handler(content_types=["text"])
-# def any_msg(message):
-#     if(message.text == Command.WHATLESSON):
-#         bot.send_message(message.chat.id, message.text)
-#     if (message.text == Command.SEND):
-#         bot.send_message(message.chat.id, message.text)
-#     if (message.text == Command.PROFILE):
-#         bot.send_message(message.chat.id, message.text)
 
 
 if __name__ == '__main__':
