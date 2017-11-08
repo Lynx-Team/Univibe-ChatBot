@@ -1,5 +1,4 @@
 import json
-import requests
 import time
 import re
 import copy
@@ -7,6 +6,10 @@ from enum import Enum
 import urllib
 import telebot
 from telebot import types
+from urllib.request import urlopen
+from urllib.parse import urlencode, quote
+import requests
+from dbconfig import PATH_TO_API
 
 from additionalCommand import unknownMessage, hiMessage, helpMessage
 from subCommand import subMessage
@@ -14,12 +17,12 @@ from startCommand import startMessage
 from sendCommand import sendMessage
 from showTableCommand import showTableMessage
 
-from dbconfig import cnxn
-
 # Prod - "416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
 # Test - "495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
 TOKEN = "453267913:AAHqhlRIoOjG74uM0ugXZjRXtD8lSQmJbhA"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
+
+ENTER_FIO = "Введите ФИО."
 
 WHATLESSON = "Какая у меня пара?"
 PROFILE = "Профиль"
@@ -40,18 +43,15 @@ def whatLesson():
 
 bot = telebot.TeleBot(TOKEN)
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_inline(call):
-    keyboard = types.InlineKeyboardMarkup()
-    # Если сообщение из чата с ботом
-    if call.message:
-        if call.data == "test":
-            bot.send_message(call.message.chat.id, "Я – сообщение из обычного режима", reply_markup=keyboard)
+@bot.message_handler(regexp='^[^/].*')
+def any_text(message):
+    global bot_state
+    if bot_state == 'fio':
+        bot_state = 'none'
+        requests.get(PATH_TO_API + 'SetFIO/' + str(message.chat.id) + '/' + message.text)
+        start_state(message)
 
-@bot.message_handler(commands=["start"])
-def mainMenu(message):
-    startMessage(message.chat.id)
-
+def start_state(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     global pervKeyBoard
     global currentKeyBoard
@@ -62,7 +62,16 @@ def mainMenu(message):
     currentKeyBoard = keyboard
     pervKeyBoard = keyboard
 
-    bot.send_message(message.chat.id, "Возможные действия:",reply_markup=keyboard)
+    bot.send_message(message.chat.id, "Возможные действия:", reply_markup=keyboard)
+
+@bot.message_handler(commands=["start"])
+def mainMenu(message):
+    global bot_state
+    if startMessage(message.chat.id):
+        bot_state = 'fio'
+        bot.send_message(message.chat.id, "Введите свои ФИО.")
+    else:
+        start_state(message)
 
 @bot.message_handler(regexp=PROFILE)
 def profile(message):
@@ -89,6 +98,7 @@ def profile(message):
 def profile(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     keyboard.add(types.KeyboardButton(text=TTABLE), types.KeyboardButton(text=TSTUDENT))
+    keyboard.add(types.KeyboardButton(text=BACK))
     bot.send_message(message.chat.id, "Выбирите режим просмотра расписания", reply_markup=keyboard)
 
 @bot.message_handler(regexp=MYSP)
@@ -111,4 +121,6 @@ def profile(message):
 
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    global bot_state
+    bot_state = 'none'
+    bot.polling()

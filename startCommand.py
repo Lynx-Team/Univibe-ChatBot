@@ -6,3 +6,6 @@ def startMessage(userId):
 
     if (isReg == 'false'):
         urlopen(PATH_TO_API + 'RegisterTelegram/' + str(userId))
+        return True
+
+    return False
