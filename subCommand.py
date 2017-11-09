@@ -1,6 +1,6 @@
 import re
-def subMessage(text):
-    subNick = re.findall(r'sub\s*(.*)\s*$', text)
-    if (subNick[0] == ""):
-        return "Вы должны ввести логин пользователя после команды sub"
-    return "Вы подписались на " + subNick[0]
+from main import *
+
+@bot.message_handler(regexp=SUB)
+def profile(message):
+    bot.send_message(message.chat.id, "Введите логин пользователя")

@@ -1,5 +1,6 @@
 from urllib.request import urlopen
-from dbconfig import PATH_TO_API
+from config import PATH_TO_API
+from main import *
 
 def startMessage(userId):
     isReg = urlopen(PATH_TO_API + 'IsRegistered/' + str(userId)).read().decode('utf-8') 

@@ -1,7 +1,6 @@
 from flask import Flask, request
 import json
-
-from main import createAnswer
+from main import *
 
 app = Flask(__name__)
 
