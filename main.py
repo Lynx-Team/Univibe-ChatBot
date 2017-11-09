@@ -7,47 +7,33 @@ import urllib
 from urllib.request import urlopen
 from urllib.parse import urlencode, quote
 import requests
+import datetime
 from config import *
+from whatLesson import *
 
-# @bot.message_handler(regexp='^[^/].*')
-# def any_text(message):
-#     global bot_state
-#     if bot_state == 'fio':
-#         bot_state = 'none'
-#         requests.get(PATH_TO_API + 'SetFIO/' + str(message.chat.id) + '/' + message.text)
-#         start_state(message)
+views = []
+global currentKeyBoard
+
+def chekView(keyboard):
+    if (len(views) == 0):
+        views.append(keyboard)
+        return
+    if (views[len(views) - 1] != keyboard):
+        views.append(keyboard)
 
 @bot.message_handler(commands=["start"])
 def start_state(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    global pervKeyBoard
-    global currentKeyBoard
-
     keyboard.add(types.KeyboardButton(text=WHATLESSON))
     keyboard.row_width = 2
     keyboard.add(types.KeyboardButton(text=PROFILE), types.KeyboardButton(text=SEND))
-    currentKeyBoard = keyboard
-    pervKeyBoard = keyboard
+
+    chekView(keyboard)
 
     bot.send_message(message.chat.id, "Возможные действия:", reply_markup=keyboard)
-#
-# @bot.message_handler(commands=["start"])
-# def mainMenu(message):
-#     global bot_state
-#     if startMessage(message.chat.id):
-#         bot_state = 'fio'
-#         bot.send_message(message.chat.id, "Введите свои ФИО.")
-#     else:
-#         start_state(message)
-
-@bot.message_handler(regexp=WHATLESSON)
-def profile(message):
-    bot.send_message(message.chat.id, "Алгебра")
 
 @bot.message_handler(regexp=PROFILE)
 def profile(message):
-    global pervKeyBoard
-    global currentKeyBoard
     print(message)
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     keyboard.add(types.KeyboardButton(text=CHANGEMOD))
@@ -56,8 +42,7 @@ def profile(message):
     keyboard.row_width = 1
     keyboard.add(types.KeyboardButton(text=BACK))
 
-    pervKeyBoard = currentKeyBoard
-    currentKeyBoard = keyboard
+    chekView(keyboard)
 
     bot.send_message(message.chat.id, "Возможные действия:", reply_markup=keyboard)
 
@@ -67,21 +52,37 @@ def profile(message):
     keyboard.add(types.KeyboardButton(text=TTABLE), types.KeyboardButton(text=TSTUDENT))
     keyboard.row_width = 1
     keyboard.add(types.KeyboardButton(text=BACK))
+
+    chekView(keyboard)
+
     bot.send_message(message.chat.id, "Выбирите режим просмотра расписания", reply_markup=keyboard)
 
 @bot.message_handler(regexp=MYSP)
 def profile(message):
-    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     keyboard.add(types.KeyboardButton(text=SUB), types.KeyboardButton(text=BACK))
+    chekView(keyboard)
     bot.send_message(message.chat.id, "Возможные функции:", reply_markup=keyboard)
 
 @bot.message_handler(regexp=BACK)
 def profile(message):
-    global pervKeyBoard
-    global currentKeyBoard
-    bot.send_message(message.chat.id, "Назад", reply_markup=pervKeyBoard)
-    pervKeyBoard = currentKeyBoard
-    currentKeyBoard = pervKeyBoard
+    if(len(views) > 0):
+        views.pop()
+        bot.send_message(message.chat.id, "Назад", reply_markup=views[len(views) - 1])
+    else:
+        bot.send_message(message.chat.id, "Упс! Ошибка... Перезагрузите бота")
+
+@bot.message_handler(regexp=TSTUDENT)
+def profile(message):
+    bot.send_message(message.chat.id, "Теперь вы в режиме студента")
+
+@bot.message_handler(regexp=WHATLESSON)
+def profile(message):
+    bot.send_message(message.chat.id, studentLesson())
+
+@bot.message_handler(regexp=TTABLE)
+def profile(message):
+    bot.send_message(message.chat.id, "Теперь вы в режиме преподователя")
 
 
 if __name__ == '__main__':

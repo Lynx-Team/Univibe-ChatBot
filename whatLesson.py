@@ -1,8 +1,21 @@
-from main import *
-@bot.message_handler(regexp=TSTUDENT)
-def profile(message):
-    bot.send_message(message.chat.id, "Теперь вы в режиме студента")
+from config import *
 
-@bot.message_handler(regexp=TTABLE)
-def profile(message):
-    bot.send_message(message.chat.id, "Теперь вы в режиме преподователя")
+def studentLesson():
+    cursor = cnxn.cursor()
+    cursor.execute("""
+    SELECT TOP 1 WEEKDAY_NAME, START_TIME, END_TIME, PARITY, SUBJECT_NAME, TEACHER_NAME, CLASSROOM_NAME FROM LESSONS
+    INNER JOIN WEEKDAYS ON WEEKDAYS.ID = WEEKDAYS_ID
+    INNER JOIN LESSON_TIMES ON LESSON_TIME_ID = LESSON_TIMES.ID
+    INNER JOIN SUBJECTS ON SUBJECTS.ID = SUBJECT_ID
+    INNER JOIN TEACHERS ON TEACHERS.ID = TEACHER_ID
+    INNER JOIN CLASSROOMS ON CLASSROOMS.ID = CLASSROOM_ID
+    INNER JOIN GROUPS ON GROUP_ID = GROUPS.ID
+    WHERE GROUP_NAME = N'Б3239а' AND
+    (Parity = DATEPART(DW, CURRENT_TIMESTAMP + '10:00:00') % 2 OR PARITY = 2) AND
+    (CONVERT(TIME, GETDATE() + '10:00:00')) <= START_TIME AND
+    (DATEPART(weekday, GETDATE() + '10:00:00')) - 1 <= WEEKDAYS.ID
+    ORDER BY WEEKDAYS.ID, START_TIME""")
+
+    result_set = cursor.fetchall()
+    return result_set[0][4] + " в " + result_set[0][6] + ", ведет " + result_set[0][5] + " c "+ str(result_set[0][1])[0:len(str(result_set[     0][1]))- 3] + " до " + str(result_set[0][2])[0:len(str(result_set[0][2])) - 3]
+
