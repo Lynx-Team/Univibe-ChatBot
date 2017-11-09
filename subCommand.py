@@ -1,7 +1,7 @@
 import re
 from main import *
 
-def subscribe(message):
+def subscribe_com(message):
     userId = message.chat.id
     subToLogin = message.text
     cursor = cnxn.cursor()
