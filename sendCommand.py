@@ -1,11 +1,13 @@
-import re
-from main import *
-def sendMessage(userName, text):
-    userText = re.findall(r'.*send\s*(.*)$', text)
-    if (userText[0] == ""):
-        return "Вы должны ввести сообщние после команды send"
-    return "@" + userName + ":\n" + userText[0]
+from config import *
 
-@bot.message_handler(regexp=SEND)
-def profile(message):
-    bot.send_message(message.chat.id, "Введите сообщение для рассылки")
+def sendMessage(messgeForSale, id, bot):
+    cursor = cnxn.cursor()
+    cursor.execute("SELECT Subscribers FROM TelegramUsers WHERE TelegramID = '" + str(id) + "'")
+    subscribers = str(cursor.fetchall()[0][0]).split(',')
+    for sub in subscribers:
+        cursor.execute("SELECT TelegramID FROM TelegramUsers WHERE UserLogin = '" + str(sub) + "'")
+        fetch = cursor.fetchall()
+        if(len(fetch) == 0 or len(fetch[0][0])):
+            continue
+        userId = str(fetch[0][0])
+        bot.send_message(userId, messgeForSale)

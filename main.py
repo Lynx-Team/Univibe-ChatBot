@@ -11,7 +11,8 @@ import requests
 import datetime
 from config import *
 from whatLesson import *
-from subCommand import *
+from sendCommand import *
+from subCommand import subscribe_com
 import requests
 
 views = []
@@ -41,10 +42,12 @@ def default_btns(message):
 @bot.message_handler(regexp='^[^/].*')
 def any_text(message):
     global bot_state
-    
+
     if bot_state == 'sub':
         bot_state = 'none'
-        subscribe(message)
+        subscribe_com(message)
+    elif bot_state == 'send':
+        sendMessage(message.text, message.chat.id, bot)
     elif bot_state == 'reg':
         bot_state = 'none'
         addNewUserId(message)
@@ -65,10 +68,12 @@ def any_text(message):
         what_lesson(message)
     elif message.text == TTABLE:
         profile_tch(message)
-
+    elif message.text == SEND:
+        send_Mess(message)
 
 @bot.message_handler(commands=["start"])
 def start_state(message):
+    global bot_state
     isReg = urlopen(PATH_TO_API + 'IsRegistered/' + str(message.chat.id)).read().decode('utf-8')
 
     if (isReg == 'false'):
@@ -113,8 +118,14 @@ def back(message):
         bot.send_message(message.chat.id, "Упс! Ошибка... Перезагрузите бота")
 
 def subscribe(message):
+    global bot_state
     bot_state = 'sub'
     bot.send_message(message.chat.id, "Введите логин пользователя, на которого вы хотите подписаться.")
+
+def send_Mess(message):
+    global bot_state
+    bot_state = 'send'
+    bot.send_message(message.chat.id, "Введите сообщение для рассылки")
 
 def profile_st(message):
     global mod
