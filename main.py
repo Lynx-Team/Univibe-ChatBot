@@ -11,6 +11,7 @@ import requests
 import datetime
 from config import *
 from whatLesson import *
+from subCommand import *
 import requests
 
 views = []
@@ -25,6 +26,14 @@ def chekView(keyboard):
         views.append(keyboard)
 
 mod = 's'
+
+@bot.message_handler(regexp='^[^/].*')
+def any_text(message):
+    global bot_state
+
+    if bot_state == 'sub':
+        bot_state = 'none'
+        subscribe(message)
 
 @bot.message_handler(commands=["start"])
 def start_state(message):
@@ -49,12 +58,6 @@ def start_state(message):
         addNewUserId(message.chat.id)
         bot.send_message(message.chat.id, "Давайте познакомимся, придумайте свой логин и введите")
         print(message)
-
-
-
-
-
-
 
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     keyboard.add(types.KeyboardButton(text=WHATLESSON))
@@ -105,6 +108,12 @@ def profile(message):
     else:
         bot.send_message(message.chat.id, "Упс! Ошибка... Перезагрузите бота")
 
+@bot.message_handler(regexp=SUB)
+def subscribe(message):
+    global bot_state
+    bot_state = 'sub'
+    bot.send_message(message.chat.id, "Введите логин пользователя, на которого вы хотите подписаться.")
+
 @bot.message_handler(regexp=TSTUDENT)
 def profile(message):
     global mod
@@ -120,7 +129,6 @@ def profile(message):
     global mod
     mod = 't'
     bot.send_message(message.chat.id, "Теперь вы просматриваете расписание в режиме преподователя")
-
 
 if __name__ == '__main__':
     global bot_state
