@@ -27,38 +27,7 @@ def chekView(keyboard):
 
 mod = 's'
 
-@bot.message_handler(regexp='^[^/].*')
-def any_text(message):
-    global bot_state
-
-    if bot_state == 'sub':
-        bot_state = 'none'
-        subscribe(message)
-
-@bot.message_handler(commands=["start"])
-def start_state(message):
-    print(message)
-
-    print(message.chat.id)
-
-    # cursor = cnxn.cursor()
-    # res = requests.get(PATH_TO_API + )
-    # cursor.execute("SELECT * from UnivibeDB.TelegramAccounts")
-    # row = cursor.fetchone()
-    #
-    # while row:
-    #     print(str(row))
-    #     row = cursor.fetchone()
-
-    #def startMessage(userId):
-    isReg = urlopen(PATH_TO_API + 'IsRegistered/' + str(message.chat.id)).read().decode('utf-8')
-
-    if (isReg == 'false'):
-        print("kek")
-        addNewUserId(message.chat.id)
-        bot.send_message(message.chat.id, "Давайте познакомимся, придумайте свой логин и введите")
-        print(message)
-
+def default_btns(message):
     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
     keyboard.add(types.KeyboardButton(text=WHATLESSON))
     keyboard.row_width = 2
@@ -67,6 +36,30 @@ def start_state(message):
     chekView(keyboard)
 
     bot.send_message(message.chat.id, "Возможные действия:", reply_markup=keyboard)
+
+@bot.message_handler(regexp='^[^/].*')
+def any_text(message):
+    global bot_state
+
+    if bot_state == 'sub':
+        bot_state = 'none'
+        subscribe(message)
+    if bot_state == 'reg':
+        bot_state = 'none'
+        addNewUserId(message)
+        default_btns(message)
+
+@bot.message_handler(commands=["start"])
+def start_state(message):
+    global bot_state
+    
+    isReg = urlopen(PATH_TO_API + 'IsRegistered/' + str(message.chat.id)).read().decode('utf-8')
+
+    if (isReg == 'false'):
+        bot.send_message(message.chat.id, "Давайте познакомимся, придумайте свой логин и введите")
+        bot_state = 'reg'
+    else:
+        default_btns(message)
 
 @bot.message_handler(regexp=PROFILE)
 def profile(message):

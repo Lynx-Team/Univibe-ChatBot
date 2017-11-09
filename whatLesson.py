@@ -6,7 +6,6 @@ def sayAboutLesson(mod = 's'):
     else:
         return teacherLesson()
 
-
 def studentLesson():
     cursor = cnxn.cursor()
     cursor.execute("""

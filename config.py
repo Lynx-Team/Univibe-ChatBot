@@ -17,7 +17,7 @@ PATH_TO_API = 'http://univibeweb.azurewebsites.net/TelegramAccount/'
 
 # Prod - "416840082:AAEtRo9zN67iYCu9rt815OIMohIdwmCPbbo"
 # Test - "495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
-TOKEN = "495392477:AAF6ebL1x3bpLKaJqn-t3vP9nNSDHQSvurM"
+TOKEN = "453267913:AAHqhlRIoOjG74uM0ugXZjRXtD8lSQmJbhA"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
 ENTER_FIO = "Введите ФИО."
